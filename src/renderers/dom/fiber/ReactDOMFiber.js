@@ -12,12 +12,33 @@
 
 'use strict';
 
+import type { Fiber } from 'ReactFiber';
 import type { HostChildren } from 'ReactFiberReconciler';
 
+var ReactControlledComponent = require('ReactControlledComponent');
 var ReactFiberReconciler = require('ReactFiberReconciler');
+var ReactDOMComponentTree = require('ReactDOMComponentTree');
 var ReactDOMFeatureFlags = require('ReactDOMFeatureFlags');
+var ReactDOMFiberComponent = require('ReactDOMFiberComponent');
+var ReactDOMInjection = require('ReactDOMInjection');
 
+var findDOMNode = require('findDOMNode');
 var warning = require('warning');
+
+var {
+  createElement,
+  setInitialProperties,
+  updateProperties,
+} = ReactDOMFiberComponent;
+var { precacheFiberNode } = ReactDOMComponentTree;
+
+ReactDOMInjection.inject();
+ReactControlledComponent.injection.injectFiberControlledHostComponent(
+  ReactDOMFiberComponent
+);
+findDOMNode._injectFiber(function(fiber: Fiber) {
+  return DOMRenderer.findHostInstance(fiber);
+});
 
 type DOMContainerElement = Element & { _reactRootContainer: ?Object };
 
@@ -51,17 +72,18 @@ var DOMRenderer = ReactFiberReconciler({
     recursivelyAppendChildren(container, children);
   },
 
-  createInstance(type : string, props : Props, children : HostChildren<Instance | TextInstance>) : Instance {
-    const domElement = document.createElement(type);
+  createInstance(
+    type : string,
+    props : Props,
+    children : HostChildren<Instance | TextInstance>,
+    internalInstanceHandle : Object
+  ) : Instance {
+    const root = document.body; // HACK
+
+    const domElement : Instance = createElement(type, props, root);
+    precacheFiberNode(internalInstanceHandle, domElement);
     recursivelyAppendChildren(domElement, children);
-    if (typeof props.className !== 'undefined') {
-      domElement.className = props.className;
-    }
-    if (typeof props.children === 'string') {
-      domElement.textContent = props.children;
-    } else if (typeof props.children === 'number') {
-      domElement.textContent = props.children.toString();
-    }
+    setInitialProperties(domElement, type, props, root);
     return domElement;
   },
 
@@ -74,18 +96,15 @@ var DOMRenderer = ReactFiberReconciler({
   },
 
   commitUpdate(domElement : Instance, oldProps : Props, newProps : Props) : void {
-    if (typeof newProps.className !== 'undefined') {
-      domElement.className = newProps.className;
-    }
-    if (typeof newProps.children === 'string') {
-      domElement.textContent = newProps.children;
-    } else if (typeof newProps.children === 'number') {
-      domElement.textContent = newProps.children.toString();
-    }
+    var type = domElement.tagName.toLowerCase(); // HACK
+    var root = document.body; // HACK
+    updateProperties(domElement, type, oldProps, newProps, root);
   },
 
-  createTextInstance(text : string) : TextInstance {
-    return document.createTextNode(text);
+  createTextInstance(text : string, internalInstanceHandle : Object) : TextInstance {
+    var textNode : TextInstance = document.createTextNode(text);
+    precacheFiberNode(internalInstanceHandle, textNode);
+    return textNode;
   },
 
   commitTextUpdate(textInstance : TextInstance, oldText : string, newText : string) : void {
@@ -153,17 +172,7 @@ var ReactDOM = {
     }
   },
 
-  findDOMNode(componentOrElement : Element | ?ReactComponent<any, any, any>) : null | Element | Text {
-    if (componentOrElement == null) {
-      return null;
-    }
-    // Unsound duck typing.
-    const component = (componentOrElement : any);
-    if (component.nodeType === 1) {
-      return component;
-    }
-    return DOMRenderer.findHostInstance(component);
-  },
+  findDOMNode: findDOMNode,
 
   unstable_batchedUpdates<A>(fn : () => A) : A {
     return DOMRenderer.batchedUpdates(fn);

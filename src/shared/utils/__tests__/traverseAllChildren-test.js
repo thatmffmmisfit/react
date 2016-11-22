@@ -84,8 +84,8 @@ describe('traverseAllChildren', () => {
       '.0'
     );
     expect(traverseContext.length).toEqual(1);
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toContain(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toContain(
       'Warning: Each child in an array or iterator should have a unique "key" prop.'
     );
   });
@@ -213,15 +213,13 @@ describe('traverseAllChildren', () => {
       });
 
     var instance = (
-      <div>{
-        [
-          frag({
-            firstHalfKey: [zero, one, two],
-            secondHalfKey: [three, four],
-            keyFive: five,
-          }),
-        ]
-      }</div>
+      <div>{[
+        frag({
+          firstHalfKey: [zero, one, two],
+          secondHalfKey: [three, four],
+          keyFive: five,
+        }),
+      ]}</div>
     );
 
     traverseAllChildren(instance.props.children, traverseFn, traverseContext);
@@ -330,8 +328,8 @@ describe('traverseAllChildren', () => {
       '.2'
     );
 
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toContain(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toContain(
       'Warning: Each child in an array or iterator should have a unique "key" prop.'
     );
   });
@@ -434,8 +432,8 @@ describe('traverseAllChildren', () => {
       '.$#3:0'
     );
 
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toContain(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toContain(
       'Warning: Using Maps as children is not yet fully supported. It is an ' +
       'experimental feature that might be removed. Convert it to a sequence ' +
       '/ iterable of keyed ReactElements instead.'
@@ -552,8 +550,8 @@ describe('traverseAllChildren', () => {
 
     ReactTestUtils.renderIntoDocument(<Parent />);
 
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toBe(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toBe(
       'Warning: Using Maps as children is not yet fully supported. It is an ' +
       'experimental feature that might be removed. Convert it to a sequence ' +
       '/ iterable of keyed ReactElements instead. Check the render method of `Parent`.'

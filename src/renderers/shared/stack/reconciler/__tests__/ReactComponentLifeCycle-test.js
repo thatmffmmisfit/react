@@ -110,7 +110,7 @@ describe('ReactComponentLifeCycle', () => {
 
       render() {
         return (
-          <div></div>
+          <div />
         );
       }
     }
@@ -135,7 +135,7 @@ describe('ReactComponentLifeCycle', () => {
       }
 
       render() {
-        return <div></div>;
+        return <div />;
       }
     }
 
@@ -160,14 +160,13 @@ describe('ReactComponentLifeCycle', () => {
           <div>{
             this.state.showHasOnDOMReadyComponent ?
             <Child /> :
-            <div> </div>
+            <div />
           }</div>
         );
       }
     }
 
-    var instance = <SwitcherParent />;
-    instance = ReactTestUtils.renderIntoDocument(instance);
+    ReactTestUtils.renderIntoDocument(<SwitcherParent />);
     expect(_testJournal).toEqual([
       'SwitcherParent:getInitialState',
       'SwitcherParent:onDOMReady',
@@ -185,7 +184,7 @@ describe('ReactComponentLifeCycle', () => {
 
       render() {
         return (
-          <div></div>
+          <div />
         );
       }
     }
@@ -204,7 +203,7 @@ describe('ReactComponentLifeCycle', () => {
 
       render() {
         return (
-          <div></div>
+          <div />
         );
       }
     }
@@ -228,14 +227,14 @@ describe('ReactComponentLifeCycle', () => {
 
       render() {
         return (
-          <div></div>
+          <div />
         );
       }
     }
 
     ReactTestUtils.renderIntoDocument(<StatefulComponent />);
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toBe(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toBe(
       'Warning: setState(...): Can only update a mounted or ' +
       'mounting component. This usually means you called setState() on an ' +
       'unmounted component. This is a no-op. Please check the code for the ' +
@@ -263,8 +262,8 @@ describe('ReactComponentLifeCycle', () => {
     var instance = ReactTestUtils.renderIntoDocument(element);
     expect(instance.isMounted()).toBeTruthy();
 
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toContain(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toContain(
       'Component is accessing isMounted inside its render()'
     );
   });
@@ -289,8 +288,8 @@ describe('ReactComponentLifeCycle', () => {
     var instance = ReactTestUtils.renderIntoDocument(element);
     expect(instance.isMounted()).toBeTruthy();
 
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toContain(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toContain(
       'Component is accessing isMounted inside its render()'
     );
   });
@@ -330,8 +329,8 @@ describe('ReactComponentLifeCycle', () => {
     });
 
     ReactTestUtils.renderIntoDocument(<Component />);
-    expect(console.error.calls.count()).toBe(1);
-    expect(console.error.calls.argsFor(0)[0]).toContain(
+    expectDev(console.error.calls.count()).toBe(1);
+    expectDev(console.error.calls.argsFor(0)[0]).toContain(
       'Component is accessing findDOMNode inside its render()'
     );
   });
@@ -517,7 +516,7 @@ describe('ReactComponentLifeCycle', () => {
       }
 
       render() {
-        return (<div></div>);
+        return (<div />);
       }
     }
 

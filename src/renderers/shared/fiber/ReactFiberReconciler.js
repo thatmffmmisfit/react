@@ -36,6 +36,8 @@ type HostChildNode<I> = { tag: TypeOfWork, output: HostChildren<I>, sibling: any
 
 export type HostChildren<I> = null | void | I | HostChildNode<I>;
 
+type OpaqueNode = Fiber;
+
 export type HostConfig<T, P, I, TI, C> = {
 
   // TODO: We don't currently have a quick way to detect that children didn't
@@ -44,11 +46,11 @@ export type HostConfig<T, P, I, TI, C> = {
 
   updateContainer(containerInfo : C, children : HostChildren<I | TI>) : void,
 
-  createInstance(type : T, props : P, children : HostChildren<I | TI>) : I,
+  createInstance(type : T, props : P, children : HostChildren<I | TI>, internalInstanceHandle : OpaqueNode) : I,
   prepareUpdate(instance : I, oldProps : P, newProps : P) : boolean,
   commitUpdate(instance : I, oldProps : P, newProps : P) : void,
 
-  createTextInstance(text : string) : TI,
+  createTextInstance(text : string, internalInstanceHandle : OpaqueNode) : TI,
   commitTextUpdate(textInstance : TI, oldText : string, newText : string) : void,
 
   appendChild(parentInstance : I, child : I | TI) : void,
@@ -60,8 +62,6 @@ export type HostConfig<T, P, I, TI, C> = {
 
   useSyncScheduling ?: boolean,
 };
-
-type OpaqueNode = Fiber;
 
 export type Reconciler<C, I, TI> = {
   mountContainer(element : ReactElement<any>, containerInfo : C) : OpaqueNode,
@@ -78,7 +78,7 @@ export type Reconciler<C, I, TI> = {
   getPublicRootInstance(container : OpaqueNode) : (ReactComponent<any, any, any> | TI | I | null),
 
   // Use for findDOMNode/findHostNode. Legacy API.
-  findHostInstance(component : ReactComponent<any, any, any>) : I | TI | null,
+  findHostInstance(component : Fiber) : I | TI | null,
 };
 
 module.exports = function<T, P, I, TI, C>(config : HostConfig<T, P, I, TI, C>) : Reconciler<C, I, TI> {
@@ -165,12 +165,12 @@ module.exports = function<T, P, I, TI, C>(config : HostConfig<T, P, I, TI, C>) :
       return containerFiber.child.stateNode;
     },
 
-    findHostInstance(component : ReactComponent<any, any, any>) : I | TI | null {
-      const fiber = findCurrentHostFiber(component);
-      if (!fiber) {
+    findHostInstance(fiber : Fiber) : I | TI | null {
+      const hostFiber = findCurrentHostFiber(fiber);
+      if (!hostFiber) {
         return null;
       }
-      return fiber.stateNode;
+      return hostFiber.stateNode;
     },
 
   };
